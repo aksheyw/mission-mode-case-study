@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission Mode — Interactive Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden}
+body{background:#2D2D2D;display:flex;align-items:center;justify-content:center;font-family:'Nunito','Rounded Mplus 1c',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;user-select:none}
+
+/* PHONE */
+.phone{width:390px;height:844px;background:#FFF;border-radius:40px;border:2px solid #444;position:relative;overflow:hidden;box-shadow:0 0 60px rgba(0,0,0,.3);transform-origin:center center}
+.phone::before{content:'';position:absolute;top:8px;left:50%;transform:translateX(-50%);width:120px;height:28px;background:#1C1C1C;border-radius:20px;z-index:100}
+
+/* SCREENS */
+.screens{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden}
+.scr{position:absolute;top:0;left:0;width:100%;height:100%;background:#FFF;display:flex;flex-direction:column;visibility:hidden;will-change:transform}
+.scr.on{visibility:visible;transform:translateX(0);z-index:2}
+.scr.slide-out-left{visibility:visible;transform:translateX(-30%);z-index:1}
+.scr.slide-in-right{visibility:visible;transform:translateX(100%);z-index:3}
+.scr.slide-in-left{visibility:visible;transform:translateX(-100%);z-index:3}
+.scr.slide-out-right{visibility:visible;transform:translateX(30%);z-index:1}
+.scr.animating{transition:transform 250ms ease-out}
+
+/* HEADER */
+.hdr{padding:48px 20px 12px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.back{width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#777;cursor:pointer;border:none;background:none;border-radius:50%;flex-shrink:0}
+.back:hover{background:#F7F7F7}
+.pbar{flex:1;height:8px;background:#E5E5E5;border-radius:4px;overflow:hidden}
+.pfill{height:100%;background:#58CC02;border-radius:4px;transition:width 400ms ease}
+.xbtn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#AFAFAF;cursor:default;border:none;background:none;flex-shrink:0}
+
+/* CONTENT */
+.cnt{flex:1;padding:8px 24px 0;display:flex;flex-direction:column;overflow:hidden}
+.ttl{font-size:22px;font-weight:800;color:#1C1C1C;line-height:1.3}
+.sub{font-size:16px;color:#777;margin-top:6px;line-height:1.4}
+
+/* BUTTONS */
+.barea{padding:16px 24px 32px;flex-shrink:0}
+.btn{width:100%;height:52px;border:none;border-radius:16px;background:#58CC02;border-bottom:4px solid #46A302;color:#FFF;font-family:inherit;font-size:18px;font-weight:700;cursor:pointer;transition:all 80ms ease;letter-spacing:.5px}
+.btn:active:not(.off){transform:scale(.97) translateY(2px);border-bottom-width:2px}
+.btn.off{background:#E5E5E5;border-bottom-color:#D0D0D0;color:#AFAFAF;cursor:default}
+
+/* CARDS */
+.card{background:#FFF;border:2px solid #E5E5E5;border-radius:16px;cursor:pointer;transition:all 150ms ease;position:relative}
+.card:hover{background:#F7F7F7}
+.card.sel{border:3px solid #58CC02;background:#F0FAE5}
+.card.sel:hover{background:#F0FAE5}
+.chk{position:absolute;top:-4px;right:-4px;width:22px;height:22px;border-radius:50%;background:#58CC02;display:none;align-items:center;justify-content:center}
+.card.sel .chk{display:flex}
+.chk svg{width:12px;height:12px}
+
+/* S1 GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+.g2 .card{height:56px;display:flex;align-items:center;gap:8px;padding:0 12px;overflow:hidden;white-space:nowrap}
+.g2 .emo{font-size:18px;flex-shrink:0}
+.g2 .lbl{font-size:13px;font-weight:600;color:#1C1C1C;overflow:hidden;text-overflow:ellipsis}
+
+/* S2 */
+.mlbl{font-size:12px;font-weight:700;color:#58CC02;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.clist{display:flex;flex-direction:column;gap:12px;margin-top:16px;flex:1;overflow:hidden}
+.clist .card{min-height:72px;display:flex;align-items:center;gap:14px;padding:14px 16px}
+.cico{font-size:28px;flex-shrink:0}
+.ctw{flex:1}
+.ctt{font-size:16px;font-weight:700;color:#1C1C1C}
+.ctd{font-size:14px;color:#777;margin-top:2px}
+
+/* S3 DATE */
+.dsel{display:flex;align-items:center;justify-content:center;gap:24px;margin-top:32px}
+.darr{width:40px;height:40px;border-radius:50%;background:#F7F7F7;border:none;font-size:18px;color:#1C1C1C;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 150ms;flex-shrink:0}
+.darr:hover:not(.dis){background:#ECECEC}
+.darr.dis{opacity:.3;cursor:default}
+.ddsp{text-align:center;min-width:160px}
+.dmo{font-size:16px;font-weight:700;color:#1C1C1C;text-transform:uppercase;letter-spacing:1px}
+.ddy{font-size:48px;font-weight:800;color:#1C1C1C;line-height:1.1}
+.dyr{font-size:16px;color:#777}
+.dft{text-align:center;margin-top:12px;font-size:16px;font-weight:600;color:#58CC02}
+.pcard{background:#F7F7F7;border-radius:12px;padding:14px 16px;margin-top:20px;text-align:center;font-size:15px;line-height:1.5;transition:color 200ms}
+
+/* S4 DASHBOARD */
+.s4{background:#F7F7F7}
+.sbar{height:44px;padding:0 24px;padding-top:40px;display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:700;color:#1C1C1C;flex-shrink:0}
+.mhero{margin:12px 16px 0;padding:18px 20px 16px;border-radius:20px;background:linear-gradient(135deg,#58CC02 0%,#46A302 100%);color:#FFF;flex-shrink:0}
+.mhl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:.9}
+.mhd{font-size:36px;font-weight:800;margin-top:2px}
+.mhs{font-size:13px;opacity:.7}
+.mhp{margin-top:10px;height:6px;background:rgba(255,255,255,.3);border-radius:3px;overflow:hidden}
+.mhpf{height:100%;width:4%;background:#FFF;border-radius:3px}
+.mhpc{font-size:11px;opacity:.8;margin-top:4px}
+.slbl{font-size:11px;font-weight:700;color:#777;text-transform:uppercase;letter-spacing:1px;padding:12px 16px 6px;flex-shrink:0}
+.fcard{margin:0 16px;background:#FFF;border:1px solid #E5E5E5;border-radius:16px;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px;cursor:pointer;flex-shrink:0}
+.fcard:hover{background:#F9FFF5}
+.fico{font-size:24px;flex-shrink:0}
+.ftxt{flex:1}
+.fttl{font-size:15px;font-weight:700;color:#1C1C1C}
+.fdsc{font-size:13px;color:#777;margin-top:1px}
+.fmet{font-size:11px;color:#AFAFAF;margin-top:2px}
+.fstart{padding:0 14px;height:30px;border-radius:15px;background:#58CC02;color:#FFF;font-size:12px;font-weight:700;border:none;cursor:pointer;flex-shrink:0;letter-spacing:.5px}
+.equeue{margin:0 16px;flex-shrink:0}
+.erow{display:flex;align-items:center;gap:10px;height:44px;border-bottom:1px solid #F0F0F0;font-size:13px;padding:0 4px}
+.edot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.bnav{position:absolute;bottom:0;left:0;right:0;height:56px;background:#FFF;border-top:1px solid #E5E5E5;display:flex;align-items:center;justify-content:space-around;flex-shrink:0}
+.nit{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#777}
+.nit.act{color:#58CC02}
+.nit .ni{font-size:20px}
+
+/* S5 EXERCISE */
+.ehdr{padding:48px 20px 8px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.ehdr .pbar{height:6px}
+.strk{font-size:14px;color:#FF9600;font-weight:700;white-space:nowrap;flex-shrink:0}
+.etlbl{font-size:12px;font-weight:700;color:#58CC02;text-transform:uppercase;letter-spacing:1px;padding:0 24px}
+.ettl{font-size:20px;font-weight:800;color:#1C1C1C;padding:6px 24px 0}
+.icard{margin:12px 24px;background:#F7F7F7;border-radius:16px;padding:18px 20px}
+.icard .icl{font-size:14px;font-style:italic;color:#777}
+.icard .icq{font-size:18px;font-weight:700;color:#1C1C1C;margin-top:6px}
+.aarea{margin:0 24px;min-height:56px;border:2px dashed #E5E5E5;border-radius:12px;padding:8px;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start;transition:all 300ms ease}
+.aarea .wc{background:#F0FAE5;border:2px solid #58CC02;border-radius:20px;padding:6px 12px;font-size:15px;color:#1C1C1C}
+.wbank{margin:10px 24px 0;display:flex;flex-wrap:wrap;gap:6px;min-height:20px}
+.wbank .wc{background:#F7F7F7;border:1px solid #E5E5E5;border-radius:20px;padding:6px 12px;font-size:15px;color:#1C1C1C;cursor:pointer;opacity:.3}
+.fbar{position:absolute;bottom:0;left:0;right:0;background:#58CC02;color:#FFF;font-size:17px;font-weight:700;padding:20px 24px;transform:translateY(100%);transition:transform 300ms ease-out;z-index:50;cursor:pointer}
+.fbar.show{transform:translateY(0)}
+
+/* S6 CELEBRATION */
+.s6{background:#F7F7F7;position:relative;display:flex;flex-direction:column;align-items:center;padding-top:60px;overflow:hidden}
+.confetti{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;overflow:hidden;z-index:1}
+.cp{position:absolute;width:6px;height:6px;border-radius:2px;animation:cfall linear infinite}
+@keyframes cfall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}80%{opacity:1}100%{transform:translateY(860px) rotate(720deg);opacity:0}}
+.celcard{background:#FFF;border-radius:20px;padding:28px 24px;box-shadow:0 4px 24px rgba(0,0,0,.1);max-width:320px;width:100%;text-align:center;position:relative;z-index:2}
+.celtl{font-size:24px;font-weight:800;color:#1C1C1C}
+.celsb{font-size:16px;color:#777;margin-top:4px}
+.ringw{margin:16px auto 12px;width:80px;height:80px;position:relative}
+.ringw svg{width:80px;height:80px;transform:rotate(-90deg)}
+.rbg{fill:none;stroke:#E5E5E5;stroke-width:6}
+.rfill{fill:none;stroke:#58CC02;stroke-width:6;stroke-linecap:round;stroke-dasharray:226.2;stroke-dashoffset:226.2;transition:stroke-dashoffset 800ms ease-out}
+.rfill.anim{stroke-dashoffset:217.15}
+.rlbl{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:16px;font-weight:800;color:#58CC02}
+.strow{display:flex;justify-content:center;gap:20px;margin-top:8px;font-size:12px;color:#777}
+.tcard{margin-top:14px;background:#FFF;border:2px dashed #E5E5E5;border-radius:16px;padding:14px 16px;max-width:320px;width:100%;text-align:left;position:relative;z-index:2}
+.tclbl{font-size:10px;font-weight:700;color:#AFAFAF;text-transform:uppercase;letter-spacing:1px}
+.tccnt{display:flex;align-items:center;gap:10px;margin-top:6px}
+.tcico{font-size:20px;flex-shrink:0}
+.tctxt{flex:1}
+.tcttl{font-size:14px;font-weight:700;color:#1C1C1C}
+.tcdsc{font-size:12px;color:#777;margin-top:1px}
+.lpill{background:#F0F0F0;color:#AFAFAF;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;flex-shrink:0}
+.s6 .barea{width:100%;max-width:320px;z-index:2;padding:14px 0 32px}
+
+/* OVERLAY */
+.overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity 300ms ease}
+.overlay.show{opacity:1;pointer-events:auto}
+.ocard{background:#FFF;border-radius:20px;padding:40px 32px;text-align:center;max-width:300px;width:90%}
+.oemo{font-size:48px}
+.ottl{font-size:22px;font-weight:800;color:#1C1C1C;margin-top:12px}
+.osub{font-size:16px;color:#777;margin-top:8px}
+.odiv{height:1px;background:#E5E5E5;margin:20px 0}
+.ohint{font-size:13px;color:#AFAFAF}
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+<div class="screens">
+
+<!-- S1 MOTIVATION -->
+<div class="scr on" id="s1">
+  <div class="hdr">
+    <div class="pbar"><div class="pfill" style="width:20%"></div></div>
+    <div class="xbtn">✕</div>
+  </div>
+  <div class="cnt">
+    <div class="ttl">Why are you learning English?</div>
+    <div class="sub">This will help us personalize your experience.</div>
+    <div class="g2" id="g1">
+      <div class="card sel" data-g="g1"><span class="chk"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#FFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="emo">🎯</span><span class="lbl">Boost my career</span></div>
+      <div class="card" data-g="g1"><span class="chk"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#FFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="emo">✈️</span><span class="lbl">Travel</span></div>
+      <div class="card" data-g="g1"><span class="chk"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#FFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="emo">📚</span><span class="lbl">Support my education</span></div>
+      <div class="card" data-g="g1"><span class="chk"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#FFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="emo">😄</span><span class="lbl">Just for fun</span></div>
+      <div class="card" data-g="g1"><span class="chk"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#FFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="emo">👋</span><span class="lbl">Connect with family</span></div>
+      <div class="card" data-g="g1"><span class="chk"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#FFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="emo">🧠</span><span class="lbl">Brain training</span></div>
+    </div>
+  </div>
+  <div class="barea"><button class="btn" onclick="nav(2)">CONTINUE</button></div>
+</div>
+
+<!-- S2 MISSION QUESTION -->
+<div class="scr" id="s2">
+  <div class="hdr">
+    <button class="back" onclick="nav(1)">‹</button>
+    <div class="pbar"><div class="pfill" style="width:40%"></div></div>
+    <div class="xbtn">✕</div>
+  </div>
+  <div class="cnt">
+    <div class="mlbl">MISSION MODE</div>
+    <div class="ttl">What's coming up for you?</div>
+    <div class="sub">We'll build your learning plan around it.</div>
+    <div class="clist" id="g2">
+      <div class="card" data-g="g2" data-v="interview"><span class="chk"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#FFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="cico">💼</span><div class="ctw"><div class="ctt">Job Interview</div><div class="ctd">Build speaking confidence and professional English</div></div></div>
+      <div class="card" data-g="g2" data-v="workplace"><span class="chk"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#FFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="cico">💬</span><div class="ctw"><div class="ctt">Workplace Conversation</div><div class="ctd">Speak confidently in meetings and client calls</div></div></div>
+      <div class="card" data-g="g2" data-v="corporate"><span class="chk"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#FFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="cico">✉️</span><div class="ctw"><div class="ctt">Corporate Communication</div><div class="ctd">Emails, meetings, and professional writing</div></div></div>
+      <div class="card" data-g="g2" data-v="travel"><span class="chk"><svg viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#FFF" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="cico">✈️</span><div class="ctw"><div class="ctt">Travel</div><div class="ctd">Navigate new places with confidence</div></div></div>
+    </div>
+  </div>
+  <div class="barea"><button class="btn off" id="s2btn" onclick="s2go()">CONTINUE</button></div>
+</div>
+
+<!-- S3 DEADLINE -->
+<div class="scr" id="s3">
+  <div class="hdr">
+    <button class="back" onclick="nav(2)">‹</button>
+    <div class="pbar"><div class="pfill" style="width:60%"></div></div>
+    <div class="xbtn">✕</div>
+  </div>
+  <div class="cnt">
+    <div class="ttl">When do you need to be ready?</div>
+    <div class="sub">We'll pace your lessons to get you there.</div>
+    <div class="dsel">
+      <button class="darr" id="dl" onclick="chgDate(-7)">‹</button>
+      <div class="ddsp"><div class="dmo" id="dm"></div><div class="ddy" id="dd"></div><div class="dyr" id="dy"></div></div>
+      <button class="darr" id="dr" onclick="chgDate(7)">›</button>
+    </div>
+    <div class="dft" id="dfl"></div>
+    <div class="pcard" id="pc"></div>
+  </div>
+  <div class="barea"><button class="btn" onclick="nav(4)">START MY MISSION</button></div>
+</div>
+
+<!-- S4 DASHBOARD -->
+<div class="scr s4" id="s4">
+  <div class="sbar"><span>9:41</span><span style="font-size:12px;font-weight:400">🔋</span></div>
+  <div class="mhero">
+    <div class="mhl">JOB INTERVIEW MISSION</div>
+    <div class="mhd">21 DAYS</div>
+    <div class="mhs">Until your mission deadline</div>
+    <div class="mhp"><div class="mhpf"></div></div>
+    <div class="mhpc">4% mission-ready</div>
+  </div>
+  <div class="slbl">TODAY'S FOCUS</div>
+  <div class="fcard" onclick="nav(5)">
+    <span class="fico">🎙️</span>
+    <div class="ftxt"><div class="fttl">Speaking Confidence</div><div class="fdsc">Introduce yourself clearly and confidently</div><div class="fmet">3 exercises · 12 min</div></div>
+    <button class="fstart" onclick="event.stopPropagation();nav(5)">START</button>
+  </div>
+  <div class="slbl">YOUR MISSION PATH</div>
+  <div class="equeue">
+    <div class="erow"><div class="edot" style="background:#1CB0F6"></div><span style="color:#1C1C1C;font-weight:600">🔵 Speaking: Tell Me About Yourself</span></div>
+    <div class="erow"><div class="edot" style="background:#AFAFAF"></div><span style="color:#777">📝 Vocabulary: Interview Words</span></div>
+    <div class="erow" style="border-bottom:none"><div class="edot" style="background:#E5E5E5"></div><span style="color:#CCC">🔒 Listening: Understand the Question</span></div>
+  </div>
+  <div class="bnav">
+    <div class="nit act"><span class="ni">🏠</span>Home</div>
+    <div class="nit"><span class="ni">🏋️</span>Practice</div>
+    <div class="nit"><span class="ni">🏆</span>Leagues</div>
+    <div class="nit"><span class="ni">👤</span>Profile</div>
+    <div class="nit"><span class="ni">⋯</span>More</div>
+  </div>
+</div>
+
+<!-- S5 EXERCISE -->
+<div class="scr" id="s5">
+  <div class="ehdr">
+    <button class="back" onclick="nav(4)">‹</button>
+    <div class="pbar"><div class="pfill" style="width:50%"></div></div>
+    <span class="strk">🔥 7</span>
+    <div class="xbtn">✕</div>
+  </div>
+  <div class="cnt" style="padding-top:4px">
+    <div class="etlbl">SENTENCE ASSEMBLY</div>
+    <div class="ettl">How would you answer this interview question?</div>
+    <div class="icard"><div class="icl">💼 <em>Interviewer asks:</em></div><div class="icq">"Tell me about yourself."</div></div>
+    <div class="aarea" id="aa">
+      <span class="wc">I</span><span class="wc">am</span><span class="wc">currently</span><span class="wc">working</span><span class="wc">as</span><span class="wc">a</span><span class="wc">manager</span><span class="wc">where</span><span class="wc">I</span><span class="wc">lead</span><span class="wc">a</span><span class="wc">team</span>
+    </div>
+    <div class="wbank">
+      <span class="wc">I</span><span class="wc">am</span><span class="wc">currently</span><span class="wc">working</span><span class="wc">as</span><span class="wc">a</span><span class="wc">manager</span><span class="wc">where</span><span class="wc">I</span><span class="wc">lead</span><span class="wc">a</span><span class="wc">team</span>
+    </div>
+  </div>
+  <div class="barea" style="position:relative"><button class="btn" id="chkbtn" onclick="doCheck()">CHECK</button></div>
+  <div class="fbar" id="fb" onclick="nav(6)">✓ Correct! Great sentence.</div>
+</div>
+
+<!-- S6 CELEBRATION -->
+<div class="scr s6" id="s6">
+  <div class="confetti" id="confC"></div>
+  <div class="celcard">
+    <div style="margin-bottom:8px">
+      <svg width="64" height="64" viewBox="0 0 64 64">
+        <ellipse cx="32" cy="36" rx="24" ry="26" fill="#58CC02"/>
+        <circle cx="22" cy="30" r="7" fill="#FFF"/>
+        <circle cx="42" cy="30" r="7" fill="#FFF"/>
+        <circle cx="24" cy="30" r="3.5" fill="#1C1C1C"/>
+        <circle cx="44" cy="30" r="3.5" fill="#1C1C1C"/>
+        <polygon points="32,38 28,46 36,46" fill="#FF9600"/>
+      </svg>
+    </div>
+    <div class="celtl">Day 1 Complete!</div>
+    <div class="celsb">You're 4% mission-ready.</div>
+    <div class="ringw">
+      <svg viewBox="0 0 80 80"><circle class="rbg" cx="40" cy="40" r="36"/><circle class="rfill" id="rf" cx="40" cy="40" r="36"/></svg>
+      <div class="rlbl">4%</div>
+    </div>
+    <div class="strow"><span>🎙️ 3 speaking</span><span>⏱️ 12 min</span><span>🔥 1 day streak</span></div>
+  </div>
+  <div class="tcard">
+    <div class="tclbl">UP NEXT AFTER YOUR MISSION</div>
+    <div class="tccnt"><span class="tcico">🤝</span><div class="tctxt"><div class="tcttl">Meetings & Presentations</div><div class="tcdsc">Speak confidently in workplace meetings</div></div><span class="lpill">LOCKED</span></div>
+  </div>
+  <div class="barea"><button class="btn" onclick="showEnd()">CONTINUE TOMORROW</button></div>
+</div>
+
+</div>
+
+<!-- DEMO OVERLAY -->
+<div class="overlay" id="ov">
+  <div class="ocard">
+    <div class="oemo">🎉</div>
+    <div class="ottl">Demo Complete</div>
+    <div class="osub">This has been Mission Mode.</div>
+    <div class="odiv"></div>
+    <div class="ohint">Press ← to restart demo</div>
+  </div>
+</div>
+</div>
+
+<script>
+let cur = 1, s2sel = null, done = false, busy = false, ftm = null, days = 21;
+const SCREENS = {1:'s1',2:'s2',3:'s3',4:'s4',5:'s5',6:'s6'};
+
+function nav(to) {
+  if (busy || to === cur) return;
+  busy = true;
+  const forward = to > cur;
+  const oldEl = document.getElementById(SCREENS[cur]);
+  const newEl = document.getElementById(SCREENS[to]);
+  if (!oldEl || !newEl) { busy = false; return; }
+
+  // Position new screen off-screen
+  newEl.classList.remove('on','slide-out-left','slide-out-right','slide-in-left','slide-in-right','animating');
+  oldEl.classList.remove('on','slide-out-left','slide-out-right','slide-in-left','slide-in-right','animating');
+
+  if (forward) {
+    newEl.classList.add('slide-in-right');
+  } else {
+    newEl.classList.add('slide-in-left');
+  }
+
+  // Force reflow
+  void newEl.offsetWidth;
+
+  // Animate both
+  newEl.classList.add('animating');
+  oldEl.classList.add('animating');
+
+  if (forward) {
+    newEl.classList.remove('slide-in-right');
+    newEl.classList.add('on');
+    oldEl.classList.remove('on');
+    oldEl.classList.add('slide-out-left');
+  } else {
+    newEl.classList.remove('slide-in-left');
+    newEl.classList.add('on');
+    oldEl.classList.remove('on');
+    oldEl.classList.add('slide-out-right');
+  }
+
+  cur = to;
+
+  // Screen 6: animate ring
+  if (to === 6) {
+    setTimeout(() => document.getElementById('rf').classList.add('anim'), 100);
+  }
+
+  setTimeout(() => {
+    // Clean up old screen
+    oldEl.classList.remove('animating','slide-out-left','slide-out-right');
+    newEl.classList.remove('animating');
+    busy = false;
+  }, 280);
+}
+
+// Card selection
+document.addEventListener('click', function(e) {
+  const c = e.target.closest('.card');
+  if (!c || busy) return;
+  const g = c.dataset.g;
+  if (!g) return;
+  const container = document.getElementById(g);
+  if (!container) return;
+  container.querySelectorAll('.card').forEach(x => x.classList.remove('sel'));
+  c.classList.add('sel');
+  if (g === 'g2') {
+    s2sel = c.dataset.v;
+    document.getElementById('s2btn').classList.remove('off');
+  }
+});
+
+function s2go() { if (s2sel) nav(3); }
+
+// Date
+const MO = ['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+function updDate() {
+  const d = new Date(); d.setDate(d.getDate() + days);
+  document.getElementById('dm').textContent = MO[d.getMonth()];
+  document.getElementById('dd').textContent = d.getDate();
+  document.getElementById('dy').textContent = d.getFullYear();
+  document.getElementById('dfl').textContent = days + ' days from today';
+  document.getElementById('dl').classList.toggle('dis', days <= 7);
+  document.getElementById('dr').classList.toggle('dis', days >= 90);
+  const pc = document.getElementById('pc');
+  if (days <= 13) { pc.textContent = "Ambitious! You'll need ~30 min/day"; pc.style.color = '#FF9600'; }
+  else if (days <= 30) { pc.textContent = days + " days · ~15 min/day · Your mission is achievable ✓"; pc.style.color = '#1C1C1C'; }
+  else if (days <= 60) { pc.textContent = "Comfortable pace. ~10 min/day"; pc.style.color = '#1CB0F6'; }
+  else { pc.textContent = "Relaxed pace. We'll keep you motivated."; pc.style.color = '#1CB0F6'; }
+}
+function chgDate(d) {
+  if (busy) return;
+  const n = days + d;
+  if (n < 7 || n > 90) return;
+  days = n;
+  updDate();
+}
+
+// Check
+function doCheck() {
+  if (busy) return;
+  busy = true;
+  const aa = document.getElementById('aa');
+  aa.style.background = '#F0FAE5';
+  aa.style.borderColor = '#58CC02';
+  aa.style.borderStyle = 'solid';
+  setTimeout(() => document.getElementById('fb').classList.add('show'), 200);
+  ftm = setTimeout(() => {
+    document.getElementById('fb').classList.remove('show');
+    busy = false;
+    nav(6);
+  }, 1700);
+}
+
+// Demo complete
+function showEnd() {
+  if (busy) return;
+  done = true;
+  document.getElementById('ov').classList.add('show');
+}
+
+function restart() {
+  done = false;
+  document.getElementById('ov').classList.remove('show');
+  // Reset all screens
+  Object.values(SCREENS).forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove('on','slide-out-left','slide-out-right','slide-in-left','slide-in-right','animating');
+  });
+  cur = 1;
+  s2sel = null;
+  days = 21;
+  // Reset S1
+  document.querySelectorAll('#g1 .card').forEach(c => c.classList.remove('sel'));
+  document.querySelector('#g1 .card').classList.add('sel');
+  // Reset S2
+  document.querySelectorAll('#g2 .card').forEach(c => c.classList.remove('sel'));
+  document.getElementById('s2btn').classList.add('off');
+  // Reset S3
+  updDate();
+  // Reset S5
+  const aa = document.getElementById('aa');
+  aa.style.background = '';
+  aa.style.borderColor = '';
+  aa.style.borderStyle = '';
+  document.getElementById('fb').classList.remove('show');
+  if (ftm) clearTimeout(ftm);
+  // Reset S6
+  document.getElementById('rf').classList.remove('anim');
+  // Show S1
+  document.getElementById('s1').classList.add('on');
+  busy = false;
+}
+
+// Overlay click
+document.getElementById('ov').addEventListener('click', restart);
+
+// Keyboard
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === ' ') {
+    e.preventDefault();
+    if (done) return;
+    if (cur === 1) nav(2);
+    else if (cur === 2) s2go();
+    else if (cur === 3) nav(4);
+    else if (cur === 4) nav(5);
+    else if (cur === 5) doCheck();
+    else if (cur === 6) showEnd();
+  }
+  if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    if (done) { restart(); return; }
+    if (cur > 1) nav(cur - 1);
+  }
+});
+
+// Scale
+function scl() {
+  const s = Math.min(1, (window.innerHeight * 0.95) / 844);
+  document.getElementById('phone').style.transform = 'scale(' + s + ')';
+}
+window.addEventListener('resize', scl);
+
+// Confetti
+(function() {
+  const c = document.getElementById('confC'), cols = ['#58CC02','#FF9600','#1CB0F6','#FF4B4B'];
+  for (let i = 0; i < 25; i++) {
+    const p = document.createElement('div');
+    p.className = 'cp';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.background = cols[Math.floor(Math.random() * 4)];
+    p.style.animationDuration = (2.5 + Math.random()) + 's';
+    p.style.animationDelay = (Math.random() * 3) + 's';
+    c.appendChild(p);
+  }
+})();
+
+updDate();
+scl();
+</script>
+</body>
+</html>
