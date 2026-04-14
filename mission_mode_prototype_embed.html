@@ -561,6 +561,7 @@ function renderExercise(index) {
   btn.classList.add('off');
   btn.style.background = '';
   btn.style.borderBottomColor = '';
+  btn.parentElement.style.visibility = 'visible';
 
   document.getElementById('fb').classList.remove('show');
   document.getElementById('fb').className = 'fbar';
@@ -615,10 +616,7 @@ function showFeedback(correct, ex) {
     fb.innerHTML = '✓ ' + ex.correctFeedback + '<span style="float:right;opacity:.8">TAP TO CONTINUE →</span>';
     fb.classList.add('show');
     exPhase = 'continue';
-    btn.textContent = 'CONTINUE';
-    btn.classList.remove('off');
-    btn.style.background = '#58CC02';
-    btn.style.borderBottomColor = '#46A302';
+    btn.parentElement.style.visibility = 'hidden';
     markCorrectState(ex);
   } else {
     fb.className = 'fbar wrong';
