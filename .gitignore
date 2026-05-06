@@ -2,3 +2,19 @@
 node_modules/
 package.json
 package-lock.json
+
+# Sensitive — interview prep + private materials, never publish
+interview_prep/
+panel_profiles/
+transcripts/
+research/
+deck_history/
+NEXT_ROUND_HANDOFF.md
+.DS_Store
+*.mp3
+*.pptx
+*.docx
+
+# Anonymization — explicit branded artifacts removed from public repo
+whatsapp_mockup.html
+prototype_screenshots/whatsapp_mockup.png
