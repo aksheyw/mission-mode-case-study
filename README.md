@@ -1,10 +1,10 @@
-# Mission Mode — A Self-Directed PM Growth Case Study
+# Mission Mode: A Self-Directed PM Growth Case Study
 
 A self-initiated product management exercise: how would you grow daily-active
 users for a major consumer app in India, where roughly one-in-six of the
 platform's global users live but engagement lags significantly behind volume?
 
-## TL;DR — The bet
+## TL;DR: The bet
 
 **Mission Mode**: short, career-relevant English missions (interview prep,
 workplace email, customer calls) targeted at the urban-intermediate-English
@@ -25,16 +25,16 @@ Six screens, keyboard-navigable, vanilla HTML/CSS/JS, iframe-safe.
 
 ## How I approached it
 
-1. **Segmentation** — disaggregated "India" into ~5 user archetypes; identified
+1. **Segmentation:** disaggregated "India" into ~5 user archetypes; identified
    urban-intermediate-English career-motivated users as the highest-leverage
    segment for a DAU-led intervention
-2. **JTBD** — the job is "feel competent in English at work," not "learn a
-   language for fun" — implies missions, not lessons
-3. **Mechanic design** — short missions over long courses; bite-sized contextual
+2. **JTBD:** the job is "feel competent in English at work," not "learn a
+   language for fun," which implies missions, not lessons
+3. **Mechanic design:** short missions over long courses; bite-sized contextual
    practice over abstract grammar drills; deadline-paced rather than infinite
-4. **Metrics** — DAU/MAU lift, mission completion rate, day-7 / day-30 retention,
+4. **Metrics:** DAU/MAU lift, mission completion rate, day-7 / day-30 retention,
    willingness-to-pay signal as a V2 indicator
-5. **V2 roadmap** — mission library expansion (industry-specific, negotiation,
+5. **V2 roadmap:** mission library expansion (industry-specific, negotiation,
    conflict English), graduation flow to standard track, discovery surface
 
 ## What's in this repo
